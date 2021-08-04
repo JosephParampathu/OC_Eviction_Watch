@@ -32,73 +32,80 @@ options.add_argument("--headless")
 
 # Opens OC Sheriff's Blotter webpage
 driver.get("http://ws.ocsd.org/Blotter/BlotterSearch.aspx")
-
 # Loop that is always true
 while True:
-    # Loops through list of localities to check each feed.
-    localities = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, \
-    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, \
-    44, 45, 46, 47, 48, 49, 50, 51, 52, 53]
-    locality_name_list = ["Aliso Viejo", "Anaheim", "Brea", "Buena Park", "Cleveland Forest North", \
-    "Cleveland Forest South", "Costa Mesa", "Coto De Caza", "County Rural North", "County Rural South", \
-    "Cypress", "Dana Point", "Dana Point Harbor", "Fair", "Fountain Valley", "Fullerton", "Garden Grove", \
-    "Huntington Beach", "Irvine", "John Wayne Airport", "La Habra", "La Mirada", "La Palma", "Ladera Ranch", \
-    "Laguna Beach", "Laguna Hills", "Laguna Niguel", "Laguna Woods", "Lake Forest", "Las Flores", "Los Alamitos", \
-    "Midway City", "Mission Viejo", "Newport Beach", "Newport Beach Harbor", "Orange", "Orange County (Unincorporated Areas)", \
-    "Placentia", "Rancho Mission Viejo", "Rancho Santa Margarita", "Rossmoor", "San Clemente", "San Juan Capistrano", \
-    "Santa Ana", "Seal Beach", "Silverado Canyon", "Stanton", "Sunset Beach Harbor", "Trabuco Canyon", "Tustin", "Villa Park", \
-    "Westminster", "Yorba Linda"]
+    #Contains error handling for temporary loss of internet or other issue which can be solved by refreshing
+    try:
+        # Loops through list of localities to check each feed.
+        localities = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, \
+        22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, \
+        44, 45, 46, 47, 48, 49, 50, 51, 52, 53]
+        locality_name_list = ["Aliso Viejo", "Anaheim", "Brea", "Buena Park", "Cleveland Forest North", \
+        "Cleveland Forest South", "Costa Mesa", "Coto De Caza", "County Rural North", "County Rural South", \
+        "Cypress", "Dana Point", "Dana Point Harbor", "Fair", "Fountain Valley", "Fullerton", "Garden Grove", \
+        "Huntington Beach", "Irvine", "John Wayne Airport", "La Habra", "La Mirada", "La Palma", "Ladera Ranch", \
+        "Laguna Beach", "Laguna Hills", "Laguna Niguel", "Laguna Woods", "Lake Forest", "Las Flores", "Los Alamitos", \
+        "Midway City", "Mission Viejo", "Newport Beach", "Newport Beach Harbor", "Orange", "Orange County (Unincorporated Areas)", \
+        "Placentia", "Rancho Mission Viejo", "Rancho Santa Margarita", "Rossmoor", "San Clemente", "San Juan Capistrano", \
+        "Santa Ana", "Seal Beach", "Silverado Canyon", "Stanton", "Sunset Beach Harbor", "Trabuco Canyon", "Tustin", "Villa Park", \
+        "Westminster", "Yorba Linda"]
 
-    for locality in localities:
+        for locality in localities:
 
-        # Selects the jurisdiction from drop down
-        select_element = driver.find_element(By.XPATH,'//*[@id="ddlCity"]')
-        select_object = Select(select_element)
-        select_object.select_by_index(locality)
-        locality_name = locality_name_list[locality-1]
+            # Selects the jurisdiction from drop down
+            select_element = driver.find_element(By.XPATH,'//*[@id="ddlCity"]')
+            select_object = Select(select_element)
+            select_object.select_by_index(locality)
+            locality_name = locality_name_list[locality-1]
 
-        # Clicks the "7 Day View" button
-        driver.find_element(By.XPATH, '//*[@id="btn7Days"]').click()
+            # Clicks the "7 Day View" button
+            driver.find_element(By.XPATH, '//*[@id="btn7Days"]').click()
 
-        # Searches for the latest post, if there is no latest post, it skips the rest of the code and goes to the next location iteration
-        try:
-            firstID=driver.find_element_by_id('rptBlotter_ctl01_td2')
-        except NoSuchElementException:
-            continue
-
-        # Searches for ID in text file of previous ID's. If the ID is new, store it in the text file and continue. Otherwise, continue to next iteration
-        if open('evictionIDs/Location_'+ str(locality) +'_eviction_IDs.txt', 'r').read().find(firstID.text) != -1:
-            print("No new calls.")
-            continue
-
-        # If it is a new call, continue and add the ID to our list of calls
-        else:
-            text_file = open('evictionIDs/Location_'+ str(locality) +'_eviction_IDs.txt', "a")
-            n = text_file.write(firstID.text + "\n")
-            text_file.close()
-
-            # This checks the type of call, exits if not eviction proceeding
-            firstType=driver.find_element_by_id('rptBlotter_ctl01_td3')
-            print(firstType.text)
-            if "EVICT" not in firstType.text:
-                # If the latest call is not an eviction, we will move on to the next location iteration
-                print("Not an eviction.")
+            # Searches for the latest post, if there is no latest post, it skips the rest of the code and goes to the next location iteration
+            try:
+                firstID=driver.find_element_by_id('rptBlotter_ctl01_td2')
+            except NoSuchElementException:
                 continue
-            # If it is an eviction proceeding
+
+            # Searches for ID in text file of previous ID's. If the ID is new, store it in the text file and continue. Otherwise, continue to next iteration
+            if open('evictionIDs/Location_'+ str(locality) +'_eviction_IDs.txt', 'r').read().find(firstID.text) != -1:
+                print("No new calls.")
+                continue
+
+            # If it is a new call, continue and add the ID to our list of calls
             else:
+                text_file = open('evictionIDs/Location_'+ str(locality) +'_eviction_IDs.txt', "a")
+                n = text_file.write(firstID.text + "\n")
+                text_file.close()
 
-                # Some blotter messages do not include an address. If no address found, sets adddress to default message
-                try:
-                    firstAddress=driver.find_element(By.XPATH,'//*[@id="rptBlotter_ct101_td4"]')
-                except NoSuchElementException:
-                    firstAddress="No Address Provided"
+                # This checks the type of call, exits if not eviction proceeding
+                firstType=driver.find_element_by_id('rptBlotter_ctl01_td3')
+                print(firstType.text)
+                if "EVICT" not in firstType.text:
+                    # If the latest call is not an eviction, we will move on to the next location iteration
+                    print("Not an eviction.")
+                    continue
+                # If it is an eviction proceeding
+                else:
 
-                #Grab the time that the call was dispatched
-                dispatchTime = driver.find_element(By.XPATH,'//*[@id="rptBlotter_ct101_td1"]')
+                    # Some blotter messages do not include an address. If no address found, sets adddress to default message
+                    try:
+                        firstAddress=driver.find_element(By.XPATH,'//*[@id="rptBlotter_ctl01_td4"]').text
+                        if firstAddress=="":
+                            firstAddress = "No Address Provided"
+                    except NoSuchElementException:
+                        firstAddress="No Address Provided"
 
-                #Post Tweet if all conditions are met.
-                tweet = "Eviction Proceeding in " + locality_name + " at: " + str(firstAddress) + ". Dispatched at " + str(dispatchTime) + "."
-                api.update_status(tweet)
-                print("Tweeted: " + tweet)
+                    #Grab the time that the call was dispatched
+                    dispatchTime = driver.find_element(By.XPATH, '//*[@id="rptBlotter_ctl01_td1"]').text
+
+
+                    #Post Tweet if all conditions are met.
+                    tweet = "Eviction Proceeding in " + locality_name + " at: " + str(firstAddress) + ". Dispatched at " + str(dispatchTime) + "."
+                    api.update_status(tweet)
+                    print("Tweeted: " + tweet)
+    except NoSuchElementException:
+        driver.refresh()
+        continue
     # Sleeps for 5 minutes before restarting the loop
     time.sleep(300)
